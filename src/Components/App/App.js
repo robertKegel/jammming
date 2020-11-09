@@ -9,31 +9,10 @@ class App extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            searchResults: [
-            {
-                name: "Purple Haze",
-                artist: "Jimi Hendrix",
-                album: "Experienced",
-                id: 28
-            }, {
-                name: "Master of Puppets",
-                artist: "Metalica",
-                album: "Master of Puppets",
-                id: 49
-            }, {
-                name: "ABCs",
-                artist: "Unknown",
-                album: "Unknown",
-                id: 70
-            }],
-            playlistTracks: [
-            {
-                name: "123s",
-                artist: "Arcamedies",
-                album: "The First",
-                id: 1
-            }],
-            playlistName: "workout playlist"
+            searchResults: [],
+            playlistTracks: [],
+            playlistName: "Playlist Name",
+            searchButtonText: "SEARCH"
         }
         
         this.addTrack = this.addTrack.bind(this);
@@ -48,7 +27,11 @@ class App extends React.Component {
         }
         let newList = this.state.playlistTracks;
         newList.push(track);
-        this.setState({ playlistTracks: newList });
+        let newResults = this.state.searchResults.filter(track => !newList.includes(track));
+        this.setState({ 
+            playlistTracks: newList,
+            searchResults: newResults
+        });
     }
     removeTrack(track) {
         let newList = this.state.playlistTracks.filter(playlistTrack => playlistTrack.id !== track.id);
@@ -59,13 +42,23 @@ class App extends React.Component {
     }
     savePlaylist() {
         let trackURIs = this.state.playlistTracks.map(track => track.uri);
-        console.log(trackURIs);
+        Spotify.savePlaylist(this.state.playlistName, trackURIs)
+        .then(this.setState({ 
+            playlistName: "Playlist Saved",
+            playlistTracks: []
+        }))
         
     }
     search(term) {
         Spotify.search(term).then(results => {
-            this.setState({ searchResults: results })
+            let playlistIDs = this.state.playlistTracks.map(track => track.id);
+            let newResults = results.filter(track => !playlistIDs.includes(track.id));
+            this.setState({ searchResults: newResults })
         });
+    }
+    
+    componentDidMount() {
+        Spotify.getAccessToken();
     }
     render() {
       return (

@@ -49,11 +49,12 @@ class App extends React.Component {
         }))
         
     }
-    search(term) {
+    async search(term) {
+        await this.setState({ searchButtonText: "Searching..." })
         Spotify.search(term).then(results => {
             let playlistIDs = this.state.playlistTracks.map(track => track.id);
             let newResults = results.filter(track => !playlistIDs.includes(track.id));
-            this.setState({ searchResults: newResults })
+            this.setState({ searchResults: newResults, searchButtonText: "SEARCH" })
         });
     }
     
@@ -65,7 +66,7 @@ class App extends React.Component {
         <div>
           <h1>Ja<span className="highlight">mmm</span>ing</h1>
           <div className="App">
-            <SearchBar onSearch={this.search} />
+            <SearchBar onSearch={this.search} searchButtonText={this.state.searchButtonText} />
             <div className="App-playlist">
               <SearchResults onAdd={this.addTrack} searchResults={this.state.searchResults} />
               <Playlist onSave={this.savePlaylist} onNameChange={this.updatePlaylistName} onRemove={this.removeTrack} playlistName={this.state.playlistName} playlistTracks={this.state.playlistTracks} />
